@@ -1,2 +1,7 @@
-get.json
-save.json
+parse_check.py
+.venv
+__pycache__
+memRanobe_MangaLib.json
+memRawWithArgs.json
+build
+dist
