@@ -1,19 +1,23 @@
 import json
+# import psutil
 
-from PyQt6.QtCore import QUrl, Qt, QRect, QTimer
+from PyQt6.QtCore import QUrl, Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, \
-    QScrollArea, QFormLayout, QInputDialog, QMessageBox, QSizePolicy, QDialog
+    QScrollArea, QFormLayout, QInputDialog, QMessageBox, QDialog
 # from PySide6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtMultimedia import QSoundEffect, QMediaPlayer, QAudioOutput
+from PyQt6.QtMultimedia import QSoundEffect
 
 # PySise6 вместо PyQt6, если хочется пользоваться QWebEngineView
 
 import sys
-import os
-from time import sleep
-from pathlib import Path
-from parse import parseUrl, lookParse, parseAll
+
+from typing_extensions import override
+
+# import os
+# from time import sleep
+# from pathlib import Path
+from parse import parseUrl, lookParse, parseAll, path
 
 # =======================================
 
@@ -21,6 +25,23 @@ from parse import parseUrl, lookParse, parseAll
 interval = 10
 enableNotify = True
 enableSound = True
+
+class CheckAllTitlesThread (QThread):
+    responseSignal = pyqtSignal(str)
+    notifySignal = pyqtSignal(str)
+    def run(self):
+        global interval
+        while True:
+            if interval < 10:
+                interval = 10
+                print("What are you doing?")
+            QThread.sleep(interval*60)
+            out = parseAll()
+            self.responseSignal.emit(updateResponseLabel(out[0]))
+            self.notifySignal.emit(notify(out[1]))
+
+def updateResponseLabel (input):
+    labResponse.setText(input)
 
 def clUrlSave ():
     try:
@@ -38,13 +59,17 @@ def clUrlSave ():
     bUrlInp.setEnabled(True)
 
 def clLookParse ():
-    bUrlLoupe.setDisabled(True)
-    args = getArgs()
+    if urlInput.text() != "":
+        bUrlLoupe.setDisabled(True)
+        args = getArgs()
 
-    labResponse.setText(lookParse(urlInput.text(), args))
+        try:
+            labResponse.setText(lookParse(urlInput.text(), args))
+        except:
+            labResponse.setText("Error: something went wrong")
 
-    # webWidget.reload()
-    bUrlLoupe.setEnabled(True)
+        # webWidget.reload()
+        bUrlLoupe.setEnabled(True)
 
 def changedUrl ():
     inp = urlInput.text()
@@ -76,7 +101,7 @@ def clAddParameter ():
 
     bInpComplexMinus = QPushButton()
     bInpComplexMinus.setFixedSize(28, 28)
-    bInpComplexMinus.setIcon(QIcon("Icons/minus.png"))
+    bInpComplexMinus.setIcon(QIcon(path("Icons/minus.png")))
     bInpComplexMinus.clicked.connect(lambda : deleteLayout(hboxUrlComplex1))
     space1 = QLabel()
 
@@ -122,29 +147,33 @@ def updateTitles ():
     clearLayout(box)
 
     list = ["memRanobe_MangaLib.json", "memRawWithArgs.json"]
+    height = 0
     for i in list:
-        f = open(i, "r")
+        f = open(path(i), "r")
         memRMLib = json.load(f)
 
         for book in memRMLib["data"]:
             h = QHBoxLayout()
-            if book["title"] != "":
-                lTitle = QLabel(book["title"])
-                lTitle.setMinimumWidth(310)
-                lTitle.setMaximumHeight(600)
-                lTitle.setWordWrap(True)
-                h.addWidget(lTitle, stretch=0)
+            # if book["title"] != "":
+            lTitle = QLabel(book["title"])
+            # lTitle.setMinimumWidth(310)
+            lTitle.setMinimumHeight(30)
+            lTitle.setMaximumHeight(600)
+            lTitle.setWordWrap(True)
+            lTitle.adjustSize()
+            height += lTitle.height() + 16
+            h.addWidget(lTitle, stretch=0)
 
-            space_ = QLabel()
-            space_.setMinimumWidth(0)
+            # space_ = QLabel()
+            # space_.setMinimumWidth(0)
 
             lUrl = QLabel('<a href="' + book["rawUrl"] + '">' + "Link" + "<\a>")
             lUrl.setOpenExternalLinks(True)
             lUrl.setFixedSize(30,30)
-            h.addWidget(lUrl)
+            h.addWidget(lUrl, stretch=1)
 
             bDelete = QPushButton()
-            bDelete.setIcon(QIcon("Icons/delete.png"))
+            bDelete.setIcon(QIcon(path("Icons/delete.png")))
             bDelete.setFixedSize(30,30)
             bDelete.clicked.connect(lambda l, x=[i, book["title"], book["rawUrl"]] : deleteTitle(x))
 
@@ -156,7 +185,7 @@ def updateTitles ():
             h.addWidget(bDelete)
 
             box.addLayout(h)
-
+        w1.setFixedHeight(height)
         f.close()
 
 def deleteTitle (input):
@@ -169,7 +198,7 @@ def deleteTitle (input):
     result = dialog.exec()
 
     if result == QMessageBox.StandardButton.Yes:
-        f = open(input[0], "r")
+        f = open(path(input[0]), "r")
         j = json.load(f)
         t = 0
         for a in j["data"]:
@@ -178,12 +207,16 @@ def deleteTitle (input):
                 break
             t += 1
         f.close()
-        f = open(input[0], "w")
+        f = open(path(input[0]), "w")
         json.dump(j, f, indent=4)
         f.close()
         updateTitles()
 
 def timerParseAll ():
+    # thread = threading.Thread(target=doParseAll)
+    # thread.start()
+    # thread.join(15)
+
     out = parseAll()
     labResponse.setText(out[0])
     notify(out[1])
@@ -207,11 +240,9 @@ def changeTimeInterval ():
         else:
             bTimeSpaces.setText(str(round(interval/60/24,2)) + " days")
 
-        timer.setInterval(interval*60*1000)
-
 def notify (inpText):
     global enableNotify, enableSound
-    if enableNotify:
+    if enableNotify and inpText != "":
         message = QDialog()
         message.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         messageLayout = QVBoxLayout()
@@ -226,7 +257,7 @@ def notify (inpText):
         space2 = QLabel()
         h.addWidget(space2)
         mButton = QPushButton()
-        mButton.setIcon(QIcon("Icons/tick.png"))
+        mButton.setIcon(QIcon(path("Icons/tick.png")))
         mButton.setFixedSize(30,30)
         mButton.clicked.connect(lambda : message.close())
         h.addWidget(mButton)
@@ -242,9 +273,9 @@ def clSetNotify ():
     global enableNotify
     enableNotify = not enableNotify
     if enableNotify:
-        bPopUpNotice.setIcon(QIcon("Icons/pop-up.png"))
+        bPopUpNotice.setIcon(QIcon(path("Icons/pop-up.png")))
     else:
-        bPopUpNotice.setIcon(QIcon("Icons/pop-up-NO.png"))
+        bPopUpNotice.setIcon(QIcon(path("Icons/pop-up-NO.png")))
 
 def clSetSound ():
     global enableSound
@@ -254,25 +285,29 @@ def clSetSound ():
     else:
         bSoundNotice.setIcon(QIcon("Icons/soundNo.png"))
 
+def myResizeEvent (event):
+    w1.setFixedWidth(event.size().width() - 40)
 
 if __name__ == "__main__":
     app = QApplication (sys.argv)
+    app.setWindowIcon(QIcon(path("Icons/appIcon.png")))
     window = QWidget ()
-    window.setWindowTitle("UpdateInform")
-    window.setFixedWidth(530)
+    window.resizeEvent = myResizeEvent
+    window.setWindowTitle("SiteNotify")
+    # window.setFixedWidth(530)
     window.resize(530,800)
 
     fList = ["memRanobe_MangaLib.json", "memRawWithArgs.json"]
     for a in fList:
-        if not open(a, "r"):
-            f = open(a, "w")
+        if not open(path(a), "r"):
+            f = open(path(a), "w")
             f.write('{"data" : []}')
             f.close()
 
     vbox = QVBoxLayout()
     window.setLayout(vbox)
 
-    soundFile = "Icons/popup-sound.mp3"
+    soundFile = path("Icons/popup-sound.mp3")
     player = QSoundEffect()
     player.setSource(QUrl.fromLocalFile("Icons/popup-sound.wav"))
     player.setVolume(1)
@@ -283,18 +318,18 @@ if __name__ == "__main__":
 
     bPopUpNotice = QPushButton()
     bPopUpNotice.setFixedSize(30,30)
-    bPopUpNotice.setIcon(QIcon("Icons/pop-up.png"))
+    bPopUpNotice.setIcon(QIcon(path("Icons/pop-up.png")))
     bPopUpNotice.clicked.connect(lambda : clSetNotify())
     bSoundNotice = QPushButton()
-    bSoundNotice.setIcon(QIcon("Icons/sound.png"))
+    bSoundNotice.setIcon(QIcon(path("Icons/sound.png")))
     bSoundNotice.setFixedSize(30,30)
     bSoundNotice.clicked.connect(lambda : clSetSound())
     bTimeSpaces = QPushButton("10 minutes")
-    bTimeSpaces.setIcon(QIcon("Icons/timer.png"))
+    bTimeSpaces.setIcon(QIcon(path("Icons/timer.png")))
     bTimeSpaces.setFixedSize(120,30)
     bTimeSpaces.clicked.connect(lambda : changeTimeInterval())
     bInform = QPushButton("Guide")
-    bInform.setIcon(QIcon("Icons/inform.png"))
+    bInform.setIcon(QIcon(path("Icons/inform.png")))
     bInform.setFixedSize(66, 30)
     space = QLabel()
 
@@ -322,12 +357,12 @@ if __name__ == "__main__":
 
     bUrlInp = QPushButton()
     bUrlInp.setFixedSize(30,30)
-    bUrlInp.setIcon(QIcon("Icons/tick.png"))
+    bUrlInp.setIcon(QIcon(path("Icons/tick.png")))
     bUrlInp.clicked.connect(lambda: clUrlSave())
 
     bUrlLoupe = QPushButton()
     bUrlLoupe.setFixedSize(30,30)
-    bUrlLoupe.setIcon(QIcon("Icons/loupe.png"))
+    bUrlLoupe.setIcon(QIcon(path("Icons/loupe.png")))
     bUrlLoupe.clicked.connect(lambda : clLookParse())
 
     hboxUrl.addWidget(urlInput)
@@ -352,7 +387,7 @@ if __name__ == "__main__":
 
     bInpComplexPlus = QPushButton()
     bInpComplexPlus.setFixedSize(28, 28)
-    bInpComplexPlus.setIcon(QIcon("Icons/plus.png"))
+    bInpComplexPlus.setIcon(QIcon(path("Icons/plus.png")))
     bInpComplexPlus.clicked.connect(lambda : clAddParameter())
     space1 = QLabel()
 
@@ -398,12 +433,15 @@ if __name__ == "__main__":
     vbox.addWidget(listArea,1)
 
     # Auto checking for updates
-    timer = QTimer()
-    if interval < 10:
-        interval = 10
-    timer.setInterval(interval*60*1000)
-    timer.timeout.connect(lambda : timerParseAll())
-    timer.start()
+    # timer = QTimer()
+    # if interval < 10:
+    #     interval = 10
+    # timer.setInterval(interval*60*1000)
+    # timer.timeout.connect(lambda : timerParseAll())
+    # timer.start()
+
+    memThread = CheckAllTitlesThread()
+    memThread.start()
 
     window.show()
     sys.exit(app.exec())

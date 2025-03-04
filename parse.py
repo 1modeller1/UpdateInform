@@ -1,11 +1,21 @@
 import requests
 from bs4 import BeautifulSoup
-import lxml
+# import lxml
 import sys
+import os
 import json
 from time import localtime
 
 D = ""
+
+
+def path(relative_path):
+  if getattr(sys, 'frozen', False):
+    base_path = sys._MEIPASS
+  else:
+    base_path = os.path.abspath(".")
+
+  return os.path.join(base_path, relative_path)
 
 def getTime ():
   d = str(localtime().tm_mday)
@@ -47,7 +57,7 @@ def parseRanobe_MangaLib (url, rawUrl, name, title):
 
   l = len(data["data"])
 
-  save = open("memRanobe_MangaLib.json", "r")
+  save = open(path("memRanobe_MangaLib.json"), "r")
   d = json.load(save)
   for n in d["data"]:
     if n["name"] == name:
@@ -75,7 +85,7 @@ def parseRanobe_MangaLib (url, rawUrl, name, title):
     d["data"].append({"name" : name, "chapters_count" : l, "title" : title, "rawUrl" : rawUrl, "time" : getTime()})
 
   save.close()
-  save = open("memRanobe_MangaLib.json", "w")
+  save = open(path("memRanobe_MangaLib.json"), "w")
   json.dump(d, save, indent=4)
   save.close()
 
@@ -115,7 +125,7 @@ def parseRawWithArgs (url, title, args=[]):
   pack = soup.text
   found = False; message = "Nothing was added"
 
-  save = open("memRawWithArgs.json", "r")
+  save = open(path("memRawWithArgs.json"), "r")
   d = json.load(save)
   for n in d["data"]:
     if url == n["rawUrl"]:
@@ -136,7 +146,7 @@ def parseRawWithArgs (url, title, args=[]):
     message = "Data was added"
 
   save.close()
-  save = open("memRawWithArgs.json", "w")
+  save = open(path("memRawWithArgs.json"), "w")
   json.dump(d, save, indent=4)
   save.close()
 
@@ -202,7 +212,7 @@ def parseAll ():
   changed = ""
 
   for a in list:
-    f = open(a, "r")
+    f = open(path(a), "r")
     j = json.load(f)
 
     for book in j["data"]:

@@ -5,3 +5,5 @@ memRanobe_MangaLib.json
 memRawWithArgs.json
 build
 dist
+*.spec
+check.txt
