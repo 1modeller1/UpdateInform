@@ -1,10 +1,11 @@
 import json
 import re
+import qdarkstyle
 
 from PyQt6.QtCore import QUrl, Qt, QThread, pyqtSignal
-from PyQt6.QtGui import QIcon, QAction, QFont
+from PyQt6.QtGui import QIcon, QAction, QFont, QColor, QPalette
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, \
-    QScrollArea, QFormLayout, QInputDialog, QMessageBox, QDialog, QFrame, QSystemTrayIcon, QMenu
+    QScrollArea, QFormLayout, QInputDialog, QMessageBox, QDialog, QFrame, QSystemTrayIcon, QMenu, QStyle
 # from PySide6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtMultimedia import QSoundEffect
 
@@ -308,7 +309,7 @@ def showGuide ():
     guide.resize(570,800)
     guideVbox = QVBoxLayout()
 
-    fG = open(path("guide.md"), "r")
+    fG = open(path("guide.md"), "r", encoding="utf-8")
     gText = ""
     for gLine in fG.readlines():
         if gLine[:4] == "<img":
@@ -339,8 +340,20 @@ def showGuide ():
 
 if __name__ == "__main__":
     app = QApplication (sys.argv)
-    app.setWindowIcon(QIcon(path("Icons/appIcon.png")))
+    app.setWindowIcon(QIcon(path("Icons/appIcon.ico")))
     QApplication.instance().setQuitOnLastWindowClosed(False)
+
+    palette = QPalette()
+
+    # Настроим цвета для темной темы
+    palette.setColor(QPalette.ColorRole.Window, QColor(42, 46, 50))  # Цвет фона
+    palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))  # Цвет текста
+    palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))  # Текст на кнопках
+    palette.setColor(QPalette.ColorRole.Base, QColor(27, 30, 32))  # Цвет фона для поля ввода
+    palette.setColor(QPalette.ColorRole.PlaceholderText, QColor(100,100,100))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(80, 80, 80))
+
+    app.setPalette(palette)
 
     mainFont = QFont()
     mainFont.setPointSize(10)
@@ -354,7 +367,7 @@ if __name__ == "__main__":
 
     # Tray mode
     trayIcon = QSystemTrayIcon()
-    trayIcon.setIcon(QIcon(path("Icons/appIcon.png")))
+    trayIcon.setIcon(QIcon(path("Icons/appIcon.ico")))
     trayIcon.activated.connect(lambda : window.show())
     trayMenu = QMenu()
 
