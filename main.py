@@ -1,4 +1,5 @@
 import json
+import re
 
 from PyQt6.QtCore import QUrl, Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QAction, QFont
@@ -310,6 +311,11 @@ def showGuide ():
     fG = open(path("guide.md"), "r")
     gText = ""
     for gLine in fG.readlines():
+        if gLine[:4] == "<img":
+            lst = gLine.find("src=") + 5
+            lend = gLine[lst:].find('"') + lst
+            newLink = path(gLine[lst:lend])
+            gLine = gLine[:lst] + newLink + gLine[lend:]
         gText += gLine
     fG.close()
 

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-.venv/bin/pyinstaller --onefile --add-data "memRanobe_MangaLib.json:." --add-data "memRawWithArgs.json:." --add-data "Icons:Icons" --name SiteNotify main.py
+.venv/bin/pyinstaller --onefile --add-data "screens:screens" --add-data "Icons:Icons" --add-data "guide.md:." --name SiteNotify main.py
 
 echo "All Done!"
