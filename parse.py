@@ -8,7 +8,8 @@ from time import localtime
 
 D = ""
 
-
+# Прикольная жуть чтобы поместить файл txt или подобный ему прямо в исполняемый файл при компиляции,
+# но его изменения сохраняться больше не будут
 def path(relative_path):
   if getattr(sys, 'frozen', False):
     base_path = sys._MEIPASS
@@ -57,7 +58,7 @@ def parseRanobe_MangaLib (url, rawUrl, name, title):
 
   l = len(data["data"])
 
-  save = open(path("memRanobe_MangaLib.json"), "r")
+  save = open("memRanobe_MangaLib.json", "r")
   d = json.load(save)
   for n in d["data"]:
     if n["name"] == name:
@@ -85,7 +86,7 @@ def parseRanobe_MangaLib (url, rawUrl, name, title):
     d["data"].append({"name" : name, "chapters_count" : l, "title" : title, "rawUrl" : rawUrl, "time" : getTime()})
 
   save.close()
-  save = open(path("memRanobe_MangaLib.json"), "w")
+  save = open("memRanobe_MangaLib.json", "w")
   json.dump(d, save, indent=4)
   save.close()
 
@@ -125,7 +126,7 @@ def parseRawWithArgs (url, title, args=[]):
   pack = soup.text
   found = False; message = "Nothing was added"
 
-  save = open(path("memRawWithArgs.json"), "r")
+  save = open("memRawWithArgs.json", "r")
   d = json.load(save)
   for n in d["data"]:
     if url == n["rawUrl"]:
@@ -146,7 +147,7 @@ def parseRawWithArgs (url, title, args=[]):
     message = "Data was added"
 
   save.close()
-  save = open(path("memRawWithArgs.json"), "w")
+  save = open("memRawWithArgs.json", "w")
   json.dump(d, save, indent=4)
   save.close()
 
@@ -212,7 +213,7 @@ def parseAll ():
   changed = ""
 
   for a in list:
-    f = open(path(a), "r")
+    f = open(a, "r")
     j = json.load(f)
 
     for book in j["data"]:

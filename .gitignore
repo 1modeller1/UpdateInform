@@ -1,9 +1,7 @@
-parse_check.py
+parse_check.*
 .venv
 __pycache__
-memRanobe_MangaLib.json
-memRawWithArgs.json
+mem*
 build
 dist
 *.spec
-check.txt
