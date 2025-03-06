@@ -64,3 +64,5 @@
 но когда-нибудь обязательно будет.\
 <img alt="img" src="screens/screen_4.png" width="500"/> \
 <br/>
+
+Ссылка на GitHub проекта: [https://github.com/1modeller1/UpdateInform](https://github.com/1modeller1/UpdateInform)

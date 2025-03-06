@@ -397,9 +397,8 @@ if __name__ == "__main__":
     vbox = QVBoxLayout()
     window.setLayout(vbox)
 
-    soundFile = path("Icons/popup-sound.mp3")
     player = QSoundEffect()
-    player.setSource(QUrl.fromLocalFile("Icons/popup-sound.wav"))
+    player.setSource(QUrl.fromLocalFile(path("Icons/popup-sound.wav")))
     player.setVolume(1)
 
     # Menu
