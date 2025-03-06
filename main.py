@@ -1,15 +1,12 @@
 import json
 import re
-import qdarkstyle
+import qdarktheme
 
 from PyQt6.QtCore import QUrl, Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QAction, QFont, QColor, QPalette
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, \
     QScrollArea, QFormLayout, QInputDialog, QMessageBox, QDialog, QFrame, QSystemTrayIcon, QMenu, QStyle
-# from PySide6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtMultimedia import QSoundEffect
-
-# PySise6 вместо PyQt6, если хочется пользоваться QWebEngineView
 
 import sys
 
@@ -181,7 +178,7 @@ def updateTitles ():
             lTime = QLabel()
             lTime.setText(book["time"])
             # lTime.setStyleSheet("color : grey")
-            lTime.setFixedWidth(100)
+            lTime.setFixedWidth(120)
             h.addWidget(lTime)
             h.addWidget(bDelete)
 
@@ -243,9 +240,9 @@ def changeTimeInterval ():
 
 def notify (inpText):
     global enableNotify, enableSound
-    if enableSound:
-        player.play()
     if enableNotify and inpText != "":
+        if enableSound:
+            player.play()
         # message = QDialog()
         # message.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         # messageLayout = QVBoxLayout()
@@ -271,6 +268,7 @@ def notify (inpText):
 
         # QTimer.singleShot(8*1000, message.close)
         # message.show()
+
 
         trayIcon.showMessage(inpText, "", QSystemTrayIcon.MessageIcon.NoIcon, 8000)
 
@@ -342,18 +340,19 @@ if __name__ == "__main__":
     app = QApplication (sys.argv)
     app.setWindowIcon(QIcon(path("Icons/appIcon.ico")))
     QApplication.instance().setQuitOnLastWindowClosed(False)
-
-    palette = QPalette()
+    app.setStyleSheet(qdarktheme.load_stylesheet())
+    # palette = QPalette()
 
     # Настроим цвета для темной темы
-    palette.setColor(QPalette.ColorRole.Window, QColor(42, 46, 50))  # Цвет фона
-    palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))  # Цвет текста
-    palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))  # Текст на кнопках
-    palette.setColor(QPalette.ColorRole.Base, QColor(27, 30, 32))  # Цвет фона для поля ввода
-    palette.setColor(QPalette.ColorRole.PlaceholderText, QColor(100,100,100))
-    palette.setColor(QPalette.ColorRole.Highlight, QColor(80, 80, 80))
+    # palette.setColor(QPalette.ColorRole.Window, QColor(42, 46, 50))  # Цвет фона
+    # palette.setColor(QPalette.ColorRole.WindowText, QColor(255, 255, 255))  # Цвет текста
+    # palette.setColor(QPalette.ColorRole.ButtonText, QColor(255, 255, 255))  # Текст на кнопках
+    # palette.setColor(QPalette.ColorRole.Base, QColor(27, 30, 32))  # Цвет фона для поля ввода
+    # palette.setColor(QPalette.ColorRole.PlaceholderText, QColor(100,100,100))
+    # palette.setColor(QPalette.ColorRole.Highlight, QColor(80, 80, 80))
+    # palette.setColor(QPalette.ColorRole.Dark, QColor(80, 80, 80))
 
-    app.setPalette(palette)
+    # app.setPalette(palette)
 
     mainFont = QFont()
     mainFont.setPointSize(10)
@@ -426,7 +425,7 @@ if __name__ == "__main__":
     bInform = QPushButton("Guide")
     bInform.clicked.connect(lambda : showGuide())
     bInform.setIcon(QIcon(path("Icons/inform.png")))
-    bInform.setFixedSize(66, 30)
+    bInform.setFixedSize(80, 30)
     bInform.setFlat(True)
     space = QLabel()
 
