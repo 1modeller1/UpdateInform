@@ -1,6 +1,7 @@
 import json
 import re
 import qdarktheme
+from time import mktime, strptime, localtime
 
 from PyQt6.QtCore import QUrl, Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QIcon, QAction, QFont, QColor, QPalette
@@ -13,7 +14,7 @@ import sys
 # import os
 # from time import sleep
 # from pathlib import Path
-from parse import parseUrl, lookParse, parseAll, path
+from parse import parseUrl, lookParse, parseAll, path, getTime
 
 # =======================================
 
@@ -145,6 +146,10 @@ def updateTitles ():
 
     list = ["memRanobe_MangaLib.json", "memRawWithArgs.json"]
     height = 0
+
+    now = getTime()
+    nTime = strptime(now[7:], "%d.%m.%Y")
+
     for i in list:
         f = open(i, "r")
         memRMLib = json.load(f)
@@ -176,8 +181,19 @@ def updateTitles ():
             bDelete.clicked.connect(lambda l, x=[i, book["title"], book["rawUrl"]] : deleteTitle(x))
 
             lTime = QLabel()
-            lTime.setText(book["time"])
-            # lTime.setStyleSheet("color : grey")
+            was = book["time"]
+            wTime = strptime(was[7:], "%d.%m.%Y")
+            lTime.setText(was)
+
+            difference = (mktime(nTime) - mktime(wTime)) / 60 / 60
+
+            lTime.setStyleSheet("color : grey")
+            if difference < 24:
+                lTime.setStyleSheet("color : rgb(50,150,50)")
+            elif difference < 24*7:
+                lTime.setStyleSheet("color : rgb(150,150,50)")
+
+
             lTime.setFixedWidth(120)
             h.addWidget(lTime)
             h.addWidget(bDelete)
