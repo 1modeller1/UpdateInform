@@ -3,7 +3,7 @@ import re
 import qdarktheme
 from time import mktime, strptime, localtime
 
-from PyQt6.QtCore import QUrl, Qt, QThread, pyqtSignal
+from PyQt6.QtCore import QUrl, Qt, QThread, pyqtSignal, QTimer, QWaitCondition
 from PyQt6.QtGui import QIcon, QAction, QFont, QColor, QPalette
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, \
     QScrollArea, QFormLayout, QInputDialog, QMessageBox, QDialog, QFrame, QSystemTrayIcon, QMenu, QStyle
@@ -287,6 +287,7 @@ def notify (inpText):
 
 
         trayIcon.showMessage(inpText, "", QSystemTrayIcon.MessageIcon.NoIcon, 8000)
+        updateTitles()
 
 def clSetNotify ():
     global enableNotify
