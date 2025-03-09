@@ -22,8 +22,10 @@ from parse import parseUrl, lookParse, parseAll, path, getTime
 interval = 10
 enableNotify = True
 enableSound = True
+fList = ["memRanobe_MangaLib.json", "memRawWithArgs.json"]
 
 class CheckAllTitlesThread (QThread):
+    updateTitlesSignal = pyqtSignal(str)
     responseSignal = pyqtSignal(str)
     notifySignal = pyqtSignal(str)
     def run(self):
@@ -34,8 +36,41 @@ class CheckAllTitlesThread (QThread):
                 print("What are you doing?")
             QThread.sleep(interval*60)
             out = parseAll()
+            QThread.sleep(2)
             self.responseSignal.emit(updateResponseLabel(out[0]))
             self.notifySignal.emit(notify(out[1]))
+            if out[1] != "":
+                self.updateTitlesSignal.emit(changeTimeInTitles())
+
+def changeTimeInTitles ():
+    global fList
+
+    now = getTime()
+    nTime = strptime(now[7:], "%d.%m.%Y")
+
+    t = 0
+    for f in fList:
+        f = open(f, "r")
+        j = json.load(f)
+
+        for k in j["data"]:
+            tim = k["time"]
+            lT = box.itemAt(t).layout().itemAt(2).widget()
+
+            lT.setText(tim)
+
+            wTime = strptime(tim, "%H:%M  %d.%m.%Y")
+            difference = (mktime(nTime) - mktime(wTime)) / 60 / 60
+
+            if difference < 24:
+                lT.setStyleSheet("color : rgb(50,150,50)")
+            elif difference < 24*7:
+                lT.setStyleSheet("color : rgb(150,150,50)")
+            else:
+                lT.setStyleSheet("color : grey")
+
+            t += 1
+        f.close()
 
 def updateResponseLabel (input):
     labResponse.setText(input)
@@ -182,10 +217,12 @@ def updateTitles ():
 
             lTime = QLabel()
             was = book["time"]
-            wTime = strptime(was[7:], "%d.%m.%Y")
+            wTime = strptime(was, "%H:%M  %d.%m.%Y")
             lTime.setText(was)
 
+            print(nTime)
             difference = (mktime(nTime) - mktime(wTime)) / 60 / 60
+            print(difference)
 
             lTime.setStyleSheet("color : grey")
             if difference < 24:
@@ -259,6 +296,7 @@ def notify (inpText):
     if enableNotify and inpText != "":
         if enableSound:
             player.play()
+        trayIcon.showMessage(inpText, "", QSystemTrayIcon.MessageIcon.NoIcon, 8000)
         # message = QDialog()
         # message.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         # messageLayout = QVBoxLayout()
@@ -284,10 +322,6 @@ def notify (inpText):
 
         # QTimer.singleShot(8*1000, message.close)
         # message.show()
-
-
-        trayIcon.showMessage(inpText, "", QSystemTrayIcon.MessageIcon.NoIcon, 8000)
-        updateTitles()
 
 def clSetNotify ():
     global enableNotify
