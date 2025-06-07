@@ -5,6 +5,7 @@ import sys
 import os
 import json
 from time import localtime
+from urllib.request import Request, urlopen
 
 D = ""
 
@@ -50,8 +51,10 @@ def clearSoupText (soup):
   return text
 
 def parseRanobe_MangaLib (url, rawUrl, name, title):
-  req = requests.get(url)
-  data = json.loads(req.text)
+  # req = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, cookies={"beget": "begetok"})
+  req = Request (url=url, headers={'User-Agent': 'Mozilla/5.0'})
+  page = urlopen(req).read()
+  data = json.loads(page)
   found = False; remChapters = False; ll = 0
   chNames = []
   outPlus = ""
@@ -112,8 +115,10 @@ def parseRanobe_MangaLib (url, rawUrl, name, title):
 
 def parseRawWithArgs (url, title, args=[]):
   global  D
-  req = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-  soup = BeautifulSoup(req.text, "lxml")
+  # req = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+  req = Request (url=url, headers={'User-Agent': 'Mozilla/5.0'})
+  page = urlopen(req).read()
+  soup = BeautifulSoup(page, "lxml")
 
   for arg in args:
     if len(arg) == 1:
@@ -221,9 +226,13 @@ def parseAll ():
         args = book["args"]
       except:
         args = []
-      out = parseUrl(book["rawUrl"], "", args)
-      output += book["title"] + ": " + out[0] + "\n"
-      if out[0] != "Nothing was added":
-        changed += book["title"] + ": " + out[0] + "\n"
+      try:
+        out = parseUrl(book["rawUrl"], "", args)
+        output += book["title"] + ": " + out[0] + "\n"
+        if out[0] != "Nothing was added":
+          changed += book["title"] + ": " + out[0] + "\n"
+      except:
+        output += book["title"] + ": PARSE ERROR\n"
+        changed += "Read error"
     f.close()
   return [output, changed]

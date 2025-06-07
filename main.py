@@ -19,7 +19,7 @@ from parse import parseUrl, lookParse, parseAll, path, getTime
 # =======================================
 
 # CURRENT_DIRECTORY = Path(__file__).resolve().parent
-interval = 10
+interval = 30
 enableNotify = True
 enableSound = True
 fList = ["memRanobe_MangaLib.json", "memRawWithArgs.json"]
@@ -31,8 +31,8 @@ class CheckAllTitlesThread (QThread):
     def run(self):
         global interval
         while True:
-            if interval < 10:
-                interval = 10
+            if interval < 30:
+                interval = 30
                 print("What are you doing?")
             QThread.sleep(interval*60)
             out = parseAll()
@@ -41,6 +41,13 @@ class CheckAllTitlesThread (QThread):
             self.notifySignal.emit(notify(out[1]))
             if out[1] != "":
                 self.updateTitlesSignal.emit(changeTimeInTitles())
+
+def checkAllTitles ():
+    out = parseAll()
+    updateResponseLabel(out[0])
+    notify(out[1])
+    if out[1] != "":
+        changeTimeInTitles()
 
 def changeTimeInTitles ():
     global fList
@@ -220,9 +227,9 @@ def updateTitles ():
             wTime = strptime(was, "%H:%M  %d.%m.%Y")
             lTime.setText(was)
 
-            print(nTime)
+            # print(nTime)
             difference = (mktime(nTime) - mktime(wTime)) / 60 / 60
-            print(difference)
+            # print(difference)
 
             lTime.setStyleSheet("color : grey")
             if difference < 24:
@@ -467,7 +474,7 @@ if __name__ == "__main__":
     bSoundNotice.setFixedSize(40,40)
     bSoundNotice.setFlat(True)
     bSoundNotice.clicked.connect(lambda : clSetSound())
-    bTimeSpaces = QPushButton("10 minutes")
+    bTimeSpaces = QPushButton("30 minutes")
     bTimeSpaces.setIcon(QIcon(path("Icons/timer.png")))
     bTimeSpaces.setFixedSize(120,30)
     bTimeSpaces.setFlat(True)
@@ -477,10 +484,16 @@ if __name__ == "__main__":
     bInform.setIcon(QIcon(path("Icons/inform.png")))
     bInform.setFixedSize(80, 30)
     bInform.setFlat(True)
+    bUpdateCheck = QPushButton()
+    bUpdateCheck.setIcon(QIcon(path("Icons/view.png")))
+    bUpdateCheck.setFixedSize(40,40)
+    bUpdateCheck.setFlat(True)
+    bUpdateCheck.clicked.connect(lambda : checkAllTitles())
     space = QLabel()
 
     menu.addWidget(bPopUpNotice)
     menu.addWidget(bSoundNotice)
+    menu.addWidget(bUpdateCheck)
     menu.addWidget(space)
     menu.addWidget(bTimeSpaces)
     menu.addWidget(bInform)
