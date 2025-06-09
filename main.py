@@ -286,7 +286,7 @@ def changeTimeInterval ():
     dialog.setWindowTitle("Change Interval")
     dialog.setLabelText("Time Interval:".ljust(45) + "(minutes)")
     dialog.setIntValue(True)
-    dialog.setIntRange(10, 10080)
+    dialog.setIntRange(30, 10080)
     dialog.setIntValue(interval)
 
     if dialog.exec() :
@@ -613,5 +613,7 @@ if __name__ == "__main__":
     window.show()
     sys.exit(app.exec())
 
-# pyinstaller --onefile --windowed file.py
+# OLD: pyinstaller --onefile --windowed file.py
+
+# NEW: ./buildApp.sh
 # Сайт с иконками https://icons8.ru/icons/
