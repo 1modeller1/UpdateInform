@@ -39,15 +39,15 @@ class CheckAllTitlesThread (QThread):
             QThread.sleep(2)
             self.responseSignal.emit(updateResponseLabel(out[0]))
             self.notifySignal.emit(notify(out[1]))
-            if out[1] != "":
-                self.updateTitlesSignal.emit(changeTimeInTitles())
+            # if out[1] != "":
+            self.updateTitlesSignal.emit(changeTimeInTitles())
 
 def checkAllTitles ():
     out = parseAll()
     updateResponseLabel(out[0])
     notify(out[1])
-    if out[1] != "":
-        changeTimeInTitles()
+    # if out[1] != "":
+    changeTimeInTitles()
 
 def changeTimeInTitles ():
     global fList
