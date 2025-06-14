@@ -195,8 +195,15 @@ def parseUrl(url, title, args=[]):
   return [out, D]
 
 def lookParse (url, args=[]):
-  req = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-  soup = BeautifulSoup(req.text, "lxml")
+  # req = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
+  # soup = BeautifulSoup(req.text, "lxml")
+
+  if "https://ranobelib.me" in url or "https://mangalib.me" in url:
+    return "\nУВЕДОМЛЕНИЕ:\n\nСтраница сайта использует javascript и потому не может быть \nпрочитана парсером приложения. \nНо не волнуйтесь, обновления о главах для этого конкретного сайта \nбудут работать корректно."
+
+  req = Request (url=url, headers={'User-Agent': 'Mozilla/5.0'})
+  page = urlopen(req).read()
+  soup = BeautifulSoup(page, "lxml")
 
   for arg in args:
     if len(arg) == 1:
